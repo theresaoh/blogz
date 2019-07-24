@@ -1,17 +1,30 @@
 {% extends "base.html" %}
 {% block content %}
 
+<!-- If a user accesses blogs by owner through the '/' route -->
+{% if posts_by_user %}
+    {% for post in posts_by_user %}
+        <br>
+        <h2>{{post.title}}</h2>
+        {{post.body}}<br>
+        {{username}}
+        <hr>
+    {% endfor %}
+{% endif %}
+
 <!-- If the user has clicked on a blog title -->
 {% if post_to_display %}
     <h1>{{post_to_display.title}}</h1>
     <p>{{post_to_display.body}}</p>
+{% endif %}
 
 <!-- If there are no blog posts to display at all -->
-{% elif blog_posts|length == 0 %}
+{% if blog_posts|length == 0 and not posts_by_user and not post_to_display %}
     <p>No posts yet</p>
+{% endif %}
 
 <!-- If the user is on the main blog page -->
-{% else %}
+{% if blog_posts|length > 0 %}
     <br>
     <h1>Blog Posts</h1>
     <hr>
@@ -20,7 +33,12 @@
             <h2><a href="blog?id={{post.id}}">{{post.title}}</a></h2>
         </form>
             <p>{{post.body}}</p>
-            <hr>
+            {% for user in users %}
+                {% if user.id == post.owner_id %}
+                <p>{{user.username}}</p>
+                <hr>
+                {% endif %}
+            {% endfor %}
         {% endfor %}
 {% endif %}
 

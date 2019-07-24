@@ -6,27 +6,27 @@ from models import User, Blog, add_new_user, add_new_post
 
 app.secret_key = 'pcEwO1Nlx7'
 
-@app.before_request
-def require_login():
-    allowed_routes = ['login', 'blog', 'index', 'signup']
-    if request.endpoint not in allowed_routes and 'username' not in session:
-        return redirect('/login')
-
 def get_blog_posts_by_user():
     owner = User.query.filter_by(username=session['username']).first()
     return Blog.query.filter_by(owner_id=owner.id).all()
 
-@app.route('/')
-def display_login():
-    return render_template('login.html')
+def get_all_blog_posts():
+    return Blog.query.all()  
+
+def get_all_users():
+    return User.query.all()
+
+@app.route('/', methods=['POST', 'GET'])
+def index():
+    return render_template('index.html', users=get_all_users())
 
 @app.route("/logout", methods=['POST'])
 def logout():
     del session['username']
-    return redirect("/")
+    return redirect("/blog")
 
 @app.route('/login', methods=['POST', 'GET'])
-def display_blogs():
+def login():
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
@@ -81,20 +81,25 @@ def signup():
 
 # This route displays all blog posts, as well as individual blog posts
 @app.route('/blog', methods=['POST', 'GET'])
-def index():
+def blog():
     # Access the id of the blog clicked
+    username = request.args.get('user')
+    if username:
+        user = User.query.filter_by(username=username).first()
+        posts_by_user = Blog.query.filter_by(owner_id=user.id).all()
+        return render_template('blog.html', posts_by_user=posts_by_user, username=username)
     blog_id = request.args.get('id')
     if blog_id != None:
         # If a blog title was clicked, show just that blog title and body on the blog page with the id as a query parameter in the URL
         post_to_display = Blog.query.filter_by(id=blog_id).first()
-        return render_template('blog.html', post_to_display=post_to_display)
+        return render_template('blog.html', post_to_display=post_to_display) 
     # Otherwise display all blog posts
-    return render_template('blog.html', blog_posts=get_blog_posts_by_user())
+    return render_template('blog.html', blog_posts=get_all_blog_posts(), users=get_all_users())
 
 
 @app.route('/newpost', methods=['POST', 'GET'])
 def add_post():
-    blog_posts = Blog.query.filter_by().all()
+    # blog_posts = Blog.query.all()
     if request.method == 'POST': 
         # Access the title and body of the blog post submitted
         title = request.form['title']
@@ -118,6 +123,12 @@ def add_post():
         return render_template('blog.html', post_to_display=post_to_display)
     # If the title or body aren't filled out properly, re-render the  page with relevant error messages
     return render_template('newpost.html')
+
+@app.before_request
+def require_login():
+    allowed_routes = ['login', 'blog', 'index', 'signup', 'test']
+    if not('username' in session or request.endpoint in allowed_routes):
+        return redirect("/login")
 
 if __name__ == '__main__':
     app.run()
