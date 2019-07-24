@@ -126,7 +126,7 @@ def add_post():
 
 @app.before_request
 def require_login():
-    allowed_routes = ['login', 'blog', 'index', 'signup', 'test']
+    allowed_routes = ['login', 'blog', 'index', 'signup']
     if not('username' in session or request.endpoint in allowed_routes):
         return redirect("/login")
 
