@@ -1,0 +1,24 @@
+body {
+    font-family: 'Century Gothic', 'Arial', sans-serif;
+    margin-left: 15%;
+    margin-right: 15%;
+}
+
+ul {
+    margin: 0 auto;
+}
+
+h1 {
+    text-align: center;
+}
+
+.error {
+    color: red;
+    font-style: italic;
+    font-size: 10pt;
+}
+
+.written-by {
+    font-size: 9pt;
+    font-style: italic;
+}

@@ -1,14 +1,9 @@
 from flask import Flask, request, redirect, render_template, flash, session
 from flask_sqlalchemy import SQLAlchemy
-import os
 from app import app, db
 from models import User, Blog, add_new_user, add_new_post
 
 app.secret_key = 'pcEwO1Nlx7'
-
-def get_blog_posts_by_user():
-    owner = User.query.filter_by(username=session['username']).first()
-    return Blog.query.filter_by(owner_id=owner.id).all()
 
 def get_all_blog_posts():
     return Blog.query.all()  
@@ -16,7 +11,8 @@ def get_all_blog_posts():
 def get_all_users():
     return User.query.all()
 
-@app.route('/', methods=['POST', 'GET'])
+# Page displaying all Blogz users
+@app.route('/', methods=['GET'])
 def index():
     return render_template('index.html', users=get_all_users())
 
@@ -27,56 +23,61 @@ def logout():
 
 @app.route('/login', methods=['POST', 'GET'])
 def login():
+    # If a user is attempting to log in
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         user = User.query.filter_by(username=username).first()
+        # If the user doesn't exist, or their password is incorrect, flash error messages
         if not user:
             flash('Username invalid', 'username-error')
             return render_template('login.html')
         if password != user.password:
             flash('Password incorrect', 'password-error')
             return render_template('login.html', username=username)
+        # Otherwise, log them in and redirect them to the blog page
         session['username'] = username
         return redirect('/blog')
+    # Display the login template plainly if the user hasn't yet attempted login
     return render_template('login.html')
 
-def password_invalid(password):
-    if len(password) < 3 or len(password) > 20:
+# A helper function to determine if passwords or usernames meet length criteria
+def is_invalid(username_or_password):
+    if len(username_or_password) < 3 or len(username_or_password) > 20:
         return True
-    if password == "":
-        return True
-    return False
-
-def username_invalid(username):
-    if len(username) < 3 or len(username) > 20:
-        return True
-    if username == "":
+    if username_or_password == "":
         return True
     return False
 
 @app.route('/signup', methods=['POST', 'GET'])
 def signup():
+    # If a user is attempting to sign up
     if request.method == 'POST':
         username = request.form['username']
         password = request.form['password']
         verify = request.form['verify']
         existing_user = User.query.filter_by(username=username).first()
+        # If the username entered matches that of an existing user, flash error
         if existing_user:
             flash('Username already exists', 'username-error')
             return render_template('signup.html')
-        if username_invalid(username):
+        # If username or password are invalid, flash error
+        if is_invalid(username):
             flash('Username invalid - usernames must be between 5 and 20 characters.', 'username-error')
             return render_template('signup.html')
-        if password_invalid(password):
+        if is_invalid(password):
             flash('Password invalid - passwords must be between 5 and 20 characters.', 'password-invalid-error')
             return render_template('signup.html', username=username)
+        # If the passwords entered don't match, flash error
         if password != verify:
             flash('Passwords don\'t match, please enter again', 'password-match-error')
             return render_template('signup.html', username=username)
+        # Otherwise, enter new user into database with the information provided and add them to session
         add_new_user(username, password)
         session['username'] = username
+        # Redirect them to add their first Blogz post
         return redirect('/newpost')
+    # If user has not yet attempted to sign up, render signup template plainly
     return render_template('signup.html')
 
 # This route displays all blog posts, as well as individual blog posts
@@ -96,10 +97,8 @@ def blog():
     # Otherwise display all blog posts
     return render_template('blog.html', blog_posts=get_all_blog_posts(), users=get_all_users())
 
-
 @app.route('/newpost', methods=['POST', 'GET'])
 def add_post():
-    # blog_posts = Blog.query.all()
     if request.method == 'POST': 
         # Access the title and body of the blog post submitted
         title = request.form['title']
@@ -126,8 +125,10 @@ def add_post():
 
 @app.before_request
 def require_login():
+    # If a user is not currently logged in, do not display any pages other than those in this list:
     allowed_routes = ['login', 'blog', 'index', 'signup']
     if not('username' in session or request.endpoint in allowed_routes):
+        # Instead, redirect them to log in
         return redirect("/login")
 
 if __name__ == '__main__':
