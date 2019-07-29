@@ -1,16 +1,15 @@
 {% extends "base.html" %}
-
 {% block content %}
-<h1>Log in to  Blogz</h1>
-<p>If you don't have an account, you may <a href="/signup">Sign Up</a> for one</p>
-<form action="/login" method="post">
-    <table>
-        <tr>
-            <td><label for="username">Username</label></td>
-            <td>
-                <input name="username" type="username" value="{{ username }}">
-            </td>
-            <td>
+
+    <h1>Log in to  Blogz</h1>
+        <p>If you don't have an account, you may <a href="/signup">Sign Up</a> for one</p>
+        <div class="user-form">
+            <div class="user-inputs">
+                <form action="/login" method="post">
+                <label for="username">Username</label>
+                <br>
+                <input name="username" type="username" value="{{ username }}" placeholder="Username">
+                <br>
                 <div class='error'>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
@@ -22,14 +21,11 @@
                         {% endif %}
                     {% endwith %}
                 </div>
-            </td>
-        </tr>
-        <tr>
-            <td><label for="password">Password</label></td>
-            <td>
-                <input name="password" type="password">
-            </td>
-            <td>
+                <div class="user-inputs">
+                <label for="password">Password</label>
+                <br>
+                <input name="password" type="password" placeholder="Password">
+                <br>
                 <div class='error'>
                     {% with messages = get_flashed_messages(with_categories=true) %}
                         {% if messages %}
@@ -41,9 +37,9 @@
                         {% endif %}
                     {% endwith %}
                 </div>
-            </td>
-        </tr>
-    </table>
-    <input type="submit" value="Login">
-</form>
+            </div>
+            <input type="submit" value="Login">
+        </div>
+    </form>
+    
 {% endblock %}

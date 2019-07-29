@@ -22,3 +22,14 @@ h1 {
     font-size: 9pt;
     font-style: italic;
 }
+
+.user-form {
+    display: flex;
+    justify-content: center;
+    text-align: center;
+    border: 1px solid black;
+}
+
+.user-inputs {
+    margin: 20px;
+}
